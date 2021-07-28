@@ -244,7 +244,7 @@ AIC(ex2.nullmodel)
 
 # graphs?
 
-ggadjustedcurves(mod8, variable = "trt", data=exp1, legend = "bottom", 
+ggadjustedcurves(mod2, variable = "trt", data=exp1, legend = "bottom", 
                  legend.title = "Treatment", ylim=c(0.6,1), xlim=c(0,400), 
                  ylab = 'Proportion not recaptured', xlab='Time (days)')
 

@@ -87,5 +87,3 @@ summary(temp_depth)
 
 temp_size = aov(SurfaceWaterTempC ~ TLmm, data = exp1)
 summary(temp_size)
-
-anova(lm(TLmm ~ DepthStrata, data = exp1))
