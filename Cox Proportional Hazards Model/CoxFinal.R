@@ -11,22 +11,20 @@ library(dplyr)
 library(survival)
 library(survminer)
 
+# import data set
+
 setwd("C:/Users/bookw/Desktop/CMAST_Research")
 bsbData <- read.csv("C:/Users/bookw/Desktop/CMAST_Research/Combined data file for bass project July 12 2021_HS.csv")
 head(bsbData)
 dim(bsbData)
 
-# rename study number column
-
-# names(combined)[names(combined) == "ï..Study_Num"] <- "Study_Num"
 
 # filter data set 
 # experiment 1: pulls from all combined data, but is looking only at control,
 # descend, and vent by angler treatments.
 
-# filter for experiments 1 and 2
+# filter for experiment 1
 exp1 <- filter(bsbData, ExperimentNum != "2")
-#exp2 <- filter(combined, ExperimentNum != "1")
 
 # some light housekeeping: convert things to factors, change column names
 
@@ -55,10 +53,8 @@ AIC(me.mod)
 summary(me.nullmodel)
 AIC(me.nullmodel)
 
-# AIC values using AIC() command are different - should we be looking at those?
 
 # fixed effect only models, same as above
-
 
 mod <- coxph(Surv(days, recap) ~ trt + depth + TL, data = exp1)
 
@@ -89,17 +85,16 @@ exp2$gradientTemp = as.numeric(exp2$TempGradientCenteredC)
 exp2$surfaceTemp = as.numeric(exp2$SurfaceWaterTempC.Centered)
 #exp2$bottomTemp = as.numeric(exp2$BottomWaterTempC_centered)
 
+
 # Mixed-effect models w/ date tagged as a random effect
 # Model 2: treatment and total length
-
-
 
 ex2.me.mod <- coxme(Surv(days, recap) ~ trt + TL + (1|f.date), data = exp2)
 
 ex2.me.nullmodel <- coxme(Surv(days, recap) ~ 1 + (1|f.date), data = exp2)
 
-# print summaries of mixed-effect models
 
+# print summaries of mixed-effect models
 
 summary(ex2.me.mod)
 AIC(ex2.me.mod)
@@ -120,18 +115,20 @@ AIC(ex2.mod)
 summary(ex2.nullmodel)
 AIC(ex2.nullmodel)
 
-# graphs?
+# Proportion not recaptured graphs for both Experiments 1 and 2, using fixed effect models
 
 ggadjustedcurves(mod, variable = "trt", data=exp1, legend = "bottom", 
                  legend.title = "Treatment", ylim=c(0.7,1), xlim=c(0,300), 
                  ylab = 'Proportion not recaptured', xlab='Time (days)',
-                 palette=c("gray0","gray30","gray60"), size=1.25)
+                 palette=c("gray0","gray30","gray60"), size=1.25, title = "Experiment 1")
 
 ggadjustedcurves(ex2.mod, variable = "trt", data=exp2, legend = "bottom", 
                  legend.title = "Treatment", ylim=c(0.7,1), xlim=c(0,85), 
                  ylab = 'Proportion not recaptured', xlab='Time (days)',
-                 palette=c("gray0","gray30","gray60","gray80"), size=1)
+                 palette=c("gray0","gray30","gray60","gray80"), size=1, title = "Experiment 2")
 
+
+# Confidence Interval Calculations for both Experiment 1 and 2:
 #intervals are not calculated natively in the coxme package. 
 #I hard-code it here so if the model changes you get them automatically by running this code. 
 
@@ -171,11 +168,12 @@ CIresults2$`2.5` = as.numeric(CIresults2$`2.5`)
 CIresults2$`97.5` = as.numeric(CIresults2$`97.5`)
 CIresults2
 
-# graph for experiment 1 overall
+# graph for experiment 1 overall, showing CI bars for each treatment
 ########################################################## RR Graph Updated Jan 2017       
 # install.packages('plotrix')
 library('plotrix')       #package for std.error bars
 
+par(mfrow=c(1,1))
 
 par(mar=c(4,5,1,2))
 
@@ -189,7 +187,7 @@ plot(x,y,xlab="Experimental treatment", xaxt='n',
      ylab="Mean relative survival (2.5/97.5 CI)",
      xlim=c(0.5,2.5), ylim=c(0, 2.1), cex=2, cex.lab=1.2, cex.axis=1.1, main="", cex.main=1.5,
      col=c("gray25", "gray50"), pch=19)
-title("", line=-1, adj=0.5, cex.main=1)
+title("Experiment 1", line=-1, adj=0.5, cex.main=1)
 
 axis(1, labels=c("Venting cannula", "Recompression device"), at=seq(1,2), cex.axis=1.1)
 
@@ -198,7 +196,7 @@ arrows(2, Descender[2], 2, c(Descender[1], Descender[3]), angle=90, length=1/8)
 
 abline(h=1, col="red", lty=1)
 
-# make 3 panel graph showing results at each depth strata
+# make 3 panel graph showing results at each depth strata, showing CI bars for each treatment
 par(mfrow=c(1,3))
 shallow <- filter(exp1, DepthStrata == 1)
 mid <- filter(exp1, DepthStrata == 2)
@@ -237,7 +235,7 @@ plot(x,y,xlab="Experimental treatment", xaxt='n',
      ylab="Mean relative survival (2.5/97.5 CI)",
      xlim=c(0.5,2.5), ylim=c(0, 2.1), cex=2, cex.lab=1.2, cex.axis=1.1, main="", cex.main=1.5,
      col=c("gray25", "gray50"), pch=19)
-title("23-26 m", line=1, adj=0.5, cex.main=1)
+title("23-26 m", line=0.25, adj=0.5, cex.main=1)
 
 axis(1, labels=c("Venting cannula", "Recompression device"), at=seq(1,2), cex.axis=1.1)
 
@@ -279,7 +277,7 @@ plot(x,y,xlab="Experimental treatment", xaxt='n',
      ylab="Mean relative survival (2.5/97.5 CI)",
      xlim=c(0.5,2.5), ylim=c(0, 2.1), cex=2, cex.lab=1.2, cex.axis=1.1, main="", cex.main=1.5,
      col=c("gray25", "gray50"), pch=19)
-title("29-32 m", line=1, adj=0.5, cex.main=1)
+title("29-32 m", line=0.25, adj=0.5, cex.main=1)
 
 axis(1, labels=c("Venting cannula", "Recompression device"), at=seq(1,2), cex.axis=1.1)
 
@@ -321,7 +319,7 @@ plot(x,y,xlab="Experimental treatment", xaxt='n',
      ylab="Mean relative survival (2.5/97.5 CI)",
      xlim=c(0.5,2.5), ylim=c(0, 2.1), cex=2, cex.lab=1.2, cex.axis=1.1, main="", cex.main=1.5,
      col=c("gray25", "gray50"), pch=19)
-title("35-38 m", line=1, adj=0.5, cex.main=1)
+title("35-38 m", line=0.25, adj=0.5, cex.main=1)
 
 axis(1, labels=c("Venting cannula", "Recompression device"), at=seq(1,2), cex.axis=1.1)
 
@@ -331,6 +329,9 @@ arrows(2, Descender[2], 2, c(Descender[1], Descender[3]), angle=90, length=1/8)
 abline(h=1, col="red", lty=1)
 
 # graph for experiment 2
+
+par(mfrow=c(1,1))
+
 
 VentResearcher <- c(CIresults2[2,3],CIresults2[2,2],CIresults2[2,4])      #2.5, median, 97.5 values, in that order
 VentAngler <- c(CIresults2[3,3],CIresults2[3,2],CIresults2[3,4])      #2.5, median, 97.5 values, in that order
@@ -343,7 +344,7 @@ plot(x,y,xlab="Experimental treatment", xaxt='n',
      ylab="Mean relative survival (2.5/97.5 CI)",
      xlim=c(0.75,3.25), ylim=c(0, 2.1), cex=2, cex.lab=1.2, cex.axis=1.1, main="", cex.main=1.5,
      col=c("gray25", "gray50", "gray70"), pch=19)
-title("", line=-1, adj=0.5, cex.main=1)
+title("Experiment 2", line=-1, adj=0.5, cex.main=1)
 
 axis(1, labels=c("Vent by Researcher", "Vent by Angler", "Recompression device"), at=seq(1,3), cex.axis=1.1)
 
@@ -352,3 +353,4 @@ arrows(2, VentAngler[2], 2, c(VentAngler[1], VentAngler[3]), angle=90, length=1/
 arrows(3, Descender[2], 3, c(Descender[1], Descender[3]), angle=90, length=1/8)
 
 abline(h=1, col="red", lty=1)
+
